@@ -50,8 +50,12 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// this doesn't really return a fixable error, so I guess we can ignore it (?)
+	//goland:noinspection GoUnhandledErrorResult
 	defer res.Body.Close()
 
+	// allows cors
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	//w.Header().Set("Content-Type", "image/jpeg")
 
 	if hStr, wStr := queries.Get("h"), queries.Get("w"); hStr != "" && wStr != "" {

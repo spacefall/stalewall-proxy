@@ -10,8 +10,8 @@ func main() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		src.Handler(w, r)
 	})
-	log.Print("Serving on http://localhost:3000")
-	err := http.ListenAndServe(":3000", nil)
+	log.Print("Serving on http://localhost:3001")
+	err := http.ListenAndServe(":3001", nil)
 	if err != nil {
 		log.Fatal(err)
 	}

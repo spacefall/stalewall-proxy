@@ -1,6 +1,7 @@
 package src
 
 import (
+	"encoding/base64"
 	"github.com/muesli/smartcrop"
 	"github.com/muesli/smartcrop/nfnt"
 	pr "github.com/spacefall/stalewall-proxy/src/providers"
@@ -32,12 +33,22 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// b64 id -> plain text id
+	base64id := queries.Get("id")
+	id, err := base64.StdEncoding.DecodeString(base64id)
+	if err != nil {
+		http.Error(w, "error decoding base64 id", http.StatusBadRequest)
+		return
+	}
+
 	// decode url with provider decoder
-	url, err := pr.Providers[prov](queries)
+	url, err := pr.Providers[prov](queries.Get("type"), string(id))
 	if err != nil {
 		http.Error(w, "error with provider "+prov+": "+err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	println(url)
 
 	// fetch image
 	res, err := http.Get(url)

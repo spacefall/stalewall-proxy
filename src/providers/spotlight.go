@@ -1,19 +1,25 @@
 package providers
 
-import "errors"
+import (
+	"errors"
+	"github.com/spacefall/stalewall-proxy/src/utils"
+)
 
-func decodeSpotlight(typeQuery string, id string) (string, error) {
+func decodeSpotlight(typeQuery string, id string) ([]byte, error) {
+	var url string
 	switch typeQuery {
 	case "ip":
-		return "https://img-prod-cms-rt-microsoft-com.akamaized.net/cms/api/am/imageFileData/" + id, nil
+		url = "https://img-prod-cms-rt-microsoft-com.akamaized.net/cms/api/am/imageFileData/" + id
 
 	case "qp":
-		return "https://query.prod.cms.rt.microsoft.com/cms/api/am/binary/" + id, nil
+		url = "https://query.prod.cms.rt.microsoft.com/cms/api/am/binary/" + id
 
 	case "rp":
-		return "https://res.public.onecdn.static.microsoft/creativeservice/" + id + ".jpg", nil
+
+		url = "https://res.public.onecdn.static.microsoft/creativeservice/" + id + ".jpg"
 
 	default:
-		return "", errors.New("invalid type")
+		return nil, errors.New("invalid type")
 	}
+	return utils.Fetcher(url)
 }

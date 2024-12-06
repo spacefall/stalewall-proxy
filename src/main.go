@@ -1,13 +1,13 @@
 package src
 
 import (
+	"bytes"
 	"encoding/base64"
 	"github.com/muesli/smartcrop"
 	"github.com/muesli/smartcrop/nfnt"
 	pr "github.com/spacefall/stalewall-proxy/src/providers"
 	"image"
 	"image/jpeg"
-	"io"
 	"net/http"
 	"strconv"
 )
@@ -42,32 +42,22 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// decode url with provider decoder
-	url, err := pr.Providers[prov](queries.Get("type"), string(id))
+	imgBytes, err := pr.Providers[prov](queries.Get("type"), string(id))
 	if err != nil {
 		http.Error(w, "error with provider "+prov+": "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	println(url)
-
-	// fetch image
-	res, err := http.Get(url)
-	if err != nil {
-		http.Error(w, "error fetching image", http.StatusInternalServerError)
-		return
-	}
-	if res.StatusCode != http.StatusOK {
-		http.Error(w, "error fetching image: "+res.Status, res.StatusCode)
-		return
-	}
-
-	// this doesn't really return a fixable error, so I guess we can ignore it (?)
-	//goland:noinspection GoUnhandledErrorResult
-	defer res.Body.Close()
-
 	// allows cors
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	//w.Header().Set("Content-Type", "image/jpeg")
+
+	// decode the image
+	img, _, err := image.Decode(bytes.NewReader(imgBytes))
+	if err != nil {
+		http.Error(w, "error decoding image", http.StatusInternalServerError)
+		return
+	}
 
 	if hStr, wStr := queries.Get("h"), queries.Get("w"); hStr != "" && wStr != "" {
 		// decode height and width
@@ -79,13 +69,6 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		width, err := strconv.Atoi(wStr)
 		if err != nil || width <= 0 {
 			http.Error(w, "invalid width", http.StatusBadRequest)
-			return
-		}
-
-		// decode the image
-		img, _, err := image.Decode(res.Body)
-		if err != nil {
-			http.Error(w, "error decoding image", http.StatusInternalServerError)
 			return
 		}
 
@@ -101,20 +84,12 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		if img.Bounds().Dx() > width || img.Bounds().Dy() > height {
 			img = resizer.Resize(img, uint(width), uint(height))
 		}
-
-		// encode to response
-		err = jpeg.Encode(w, img, nil)
-		if err != nil {
-			http.Error(w, "error encoding image for response", http.StatusInternalServerError)
-			return
-		}
-		return
 	}
 
-	// if not cropped, copy image to response
-	_, err = io.Copy(w, res.Body)
+	// encode to response
+	err = jpeg.Encode(w, img, &jpeg.Options{Quality: 92})
 	if err != nil {
-		http.Error(w, "error responding with image", http.StatusInternalServerError)
+		http.Error(w, "error encoding image for response", http.StatusInternalServerError)
 		return
 	}
 }

@@ -19,6 +19,17 @@ type SubImager interface {
 func Handler(w http.ResponseWriter, r *http.Request) {
 	// just syntactic sugar
 	queries := r.URL.Query()
+	var err error
+	quality := 92
+
+	if qStr := queries.Get("q"); qStr != "" {
+		// decode height and width
+		quality, err = strconv.Atoi(qStr)
+		if err != nil || quality < 0 || quality > 100 {
+			http.Error(w, "invalid quality", http.StatusBadRequest)
+			return
+		}
+	}
 
 	// get provider
 	prov := queries.Get("prov")
@@ -87,7 +98,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// encode to response
-	err = jpeg.Encode(w, img, &jpeg.Options{Quality: 92})
+	err = jpeg.Encode(w, img, &jpeg.Options{Quality: quality})
 	if err != nil {
 		http.Error(w, "error encoding image for response", http.StatusInternalServerError)
 		return

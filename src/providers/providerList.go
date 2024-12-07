@@ -6,4 +6,5 @@ var Providers = map[string]func(string, string) ([]byte, error){
 	"spotlight":  decodeSpotlight,
 	"bing":       decodeBing,
 	"earthview":  decodeEarthView,
+	"apod":       decodeApod,
 }

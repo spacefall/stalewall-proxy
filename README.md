@@ -1,20 +1,20 @@
 # stalewall-proxy
-basic image proxy (with smartcrop support) for [stalewall](https://github.com/spacefall/stalewall-api) in pure go 
+Simple image proxy (with smartcrop) for [stalewall](https://github.com/spacefall/stalewall-api) in pure go 
 
 ## Host
-This repo is ready to be deployed to Vercel (serverless functions) and it is used for the main stalewall-proxy instance.
-Alternatively, the repo includes a basic HTTP server (in go) that functions the same way as the function but is meant for development environments.
+This repo is ready to be deployed to Vercel (serverless functions).  
+Alternatively, the repo includes a basic HTTP server (in go) that is ready to use.
 
 ## Providers
 Stalewall-proxy supports most of stalewall providers:
 - Bing homepage image (`bing`)
 - Windows Spotlight (`spotlight`)
-- Chromecast 1 Ambient Mode (`chromecast`)
+- Chromecast (1) Ambient Mode (`chromecast`)
 - Fire TV screensaver (`firetv`)
 - Earth View by Google Earth (`earthview`)
 - NASA Astronomy Picture of The Day (`apod`)
 
-Note: value in parentheses is the one to use for prov query
+**Note:** value in parentheses is the one to use for `prov` query
 
 Unsupported providers are the ones that aren't proxied by stalewall, like unsplash.
 
